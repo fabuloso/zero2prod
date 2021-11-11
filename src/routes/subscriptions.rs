@@ -2,9 +2,9 @@ use actix_web::{
     web::{self, Form},
     HttpResponse,
 };
-use chrono::Utc;
 use sqlx::PgPool;
-use uuid::Uuid;
+
+#[allow(clippy::async_yields_async)]
 #[tracing::instrument(name="Adding a new subscriber", skip(form, pool), fields(subscriber_email = %form.email, subscriber_name = %form.name))]
 pub async fn subscribe(form: Form<FormData>, pool: web::Data<PgPool>) -> HttpResponse {
     match insert_subscriber(&pool, &form).await {
@@ -26,10 +26,10 @@ pub async fn subscribe(form: Form<FormData>, pool: web::Data<PgPool>) -> HttpRes
 async fn insert_subscriber(pool: &PgPool, form: &FormData) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"INSERT INTO subscriptions (id, email, name, subscribed_at) VALUES ($1,$2,$3,$4)"#,
-        Uuid::new_v4(),
+        uuid::Uuid::new_v4(),
         form.email,
         form.name,
-        Utc::now()
+        chrono::Utc::now()
     )
     .execute(pool)
     .await
