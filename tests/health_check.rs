@@ -1,11 +1,23 @@
 use std::net::TcpListener;
 
+use once_cell::sync::Lazy;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use zero2prod::{
     configuration::{get_configuration, DatabaseSettings},
+    get_subscriber, init_subscriber,
     startup::run,
 };
+
+static TRACING: Lazy<()> = Lazy::new(|| {
+    if std::env::var("TEST_LOG").is_ok() {
+        let subscriber = get_subscriber("test".to_string(), "debug".to_string(), std::io::stdout);
+        init_subscriber(subscriber);
+    } else {
+        let subscriber = get_subscriber("test".to_string(), "debug".to_string(), std::io::sink);
+        init_subscriber(subscriber);
+    }
+});
 
 #[actix_rt::test]
 async fn that_health_check_works() {
@@ -83,6 +95,7 @@ pub struct TestApp {
 }
 
 async fn spawn_app() -> TestApp {
+    Lazy::force(&TRACING);
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to random port");
     let port = listener.local_addr().unwrap().port();
     let mut configuration = get_configuration().unwrap();
