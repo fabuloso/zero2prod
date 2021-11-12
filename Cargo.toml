@@ -35,12 +35,13 @@ tracing-actix-web = "0.4.0-beta.12"
 
 [dependencies.sqlx]
 version = "0.5.9"
-defatult-features = false
+default-features = false
 features = [
         "runtime-actix-rustls",
         "macros",
         "postgres",
         "uuid",
         "chrono",
-        "migrate"
+        "migrate",
+        "offline"
 ]
