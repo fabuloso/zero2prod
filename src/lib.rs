@@ -6,6 +6,7 @@ use tracing_subscriber::{
 };
 
 pub mod configuration;
+pub mod domain;
 mod routes;
 pub mod startup;
 
