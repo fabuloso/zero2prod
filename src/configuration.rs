@@ -1,9 +1,12 @@
 use std::convert::{TryFrom, TryInto};
 
+use crate::domain::subscriber_email::SubscriberEmail;
+
 #[derive(serde::Deserialize)]
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
+    pub email_client: EmailClientSetting,
 }
 
 #[derive(serde::Deserialize)]
@@ -19,6 +22,12 @@ pub struct DatabaseSettings {
     pub port: u16,
     pub host: String,
     pub database_name: String,
+}
+
+#[derive(serde::Deserialize)]
+pub struct EmailClientSetting {
+    pub base_url: String,
+    pub sender_email: String,
 }
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
@@ -83,5 +92,11 @@ impl DatabaseSettings {
             "postgres://{}:{}@{}:{}",
             self.username, self.password, self.host, self.port
         )
+    }
+}
+
+impl EmailClientSetting {
+    pub fn sender(&self) -> Result<SubscriberEmail, String> {
+        SubscriberEmail::parse(self.sender_email.clone())
     }
 }
